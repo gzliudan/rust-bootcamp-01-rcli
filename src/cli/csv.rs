@@ -1,21 +1,6 @@
+use super::is_file_exist;
 use clap::Parser;
 use std::{fmt, str::FromStr};
-
-#[derive(Debug, Parser)]
-#[clap(name = "rcli", version, author, about, long_about = None)]
-pub struct Opts {
-    #[command(subcommand)]
-    pub cmd: SubCommand,
-}
-
-#[derive(Debug, Parser)]
-pub enum SubCommand {
-    #[command(name = "csv", about = "Show CSV or convert CSV to other formats")]
-    Csv(CsvOpts),
-
-    #[command(name = "genpass", about = "Generate a random password")]
-    Genpass(GenpassOpts),
-}
 
 #[derive(Debug, Clone, Copy)]
 pub enum OutputFormat {
@@ -39,32 +24,6 @@ pub struct CsvOpts {
 
     #[arg(long, default_value_t = true)]
     pub header: bool,
-}
-
-#[derive(Debug, Parser)]
-pub struct GenpassOpts {
-    #[arg(short, long, default_value_t = 16)]
-    pub length: u8,
-
-    #[arg(long, default_value_t = false)]
-    pub uppercase: bool,
-
-    #[arg(long, default_value_t = false)]
-    pub lowercase: bool,
-
-    #[arg(long, default_value_t = false)]
-    pub number: bool,
-
-    #[arg(long, default_value_t = false)]
-    pub symbol: bool,
-}
-
-fn is_file_exist(path: &str) -> Result<String, String> {
-    if std::path::Path::new(path).exists() {
-        Ok(path.into())
-    } else {
-        Err(format!("File '{path}' does not exist"))
-    }
 }
 
 fn parse_format(format: &str) -> Result<OutputFormat, anyhow::Error> {
@@ -93,7 +52,7 @@ impl FromStr for OutputFormat {
 }
 
 impl fmt::Display for OutputFormat {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", Into::<&str>::into(*self))
     }
 }
