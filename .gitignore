@@ -1,2 +1,8 @@
+# vscode
+/.vscode
+
+# rust
 /target
+
+# app
 /output.*
