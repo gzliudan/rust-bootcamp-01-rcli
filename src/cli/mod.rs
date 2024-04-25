@@ -1,14 +1,16 @@
 mod base64;
 mod csv;
 mod genpass;
+mod text;
 
 use self::csv::CsvOpts;
 use clap::Parser;
 use genpass::GenPassOpts;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub use self::csv::OutputFormat;
 pub use base64::{Base64Format, Base64SubCommand};
+pub use text::{TextSignFormat, TextSubCommand};
 
 #[derive(Debug, Parser)]
 #[clap(name = "rcli", version, author, about, long_about = None)]
@@ -27,6 +29,9 @@ pub enum SubCommand {
 
     #[command(subcommand)]
     Base64(Base64SubCommand),
+
+    #[command(subcommand)]
+    Text(TextSubCommand),
 }
 
 fn is_file_exist(path: &str) -> Result<String, String> {
@@ -35,6 +40,16 @@ fn is_file_exist(path: &str) -> Result<String, String> {
         Ok(path.into())
     } else {
         Err(format!("File '{path}' does not exist"))
+    }
+}
+
+fn is_dir_exist(path: &str) -> Result<PathBuf, &'static str> {
+    // if input is "-" or file exists
+    let p = Path::new(path);
+    if p.exists() && p.is_dir() {
+        Ok(path.into())
+    } else {
+        Err("Path does not exist or is not a directory")
     }
 }
 
