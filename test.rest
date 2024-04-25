@@ -1,0 +1,15 @@
+### Get index page
+
+GET http://localhost:8080/
+
+### Get a non exist file
+
+GET http://localhost:8080/abc.txt
+
+### Get an exist file
+
+GET http://localhost:8080/Cargo.toml
+
+### Get an exist binary file
+
+GET http://localhost:8080/fixtures/ed25519.sk

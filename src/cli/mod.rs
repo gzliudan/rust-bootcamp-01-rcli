@@ -1,16 +1,19 @@
 mod base64;
 mod csv;
 mod genpass;
+mod http;
 mod text;
 
-use self::csv::CsvOpts;
+use self::{csv::CsvOpts, genpass::GenPassOpts};
 use clap::Parser;
-use genpass::GenPassOpts;
 use std::path::{Path, PathBuf};
 
-pub use self::csv::OutputFormat;
-pub use base64::{Base64Format, Base64SubCommand};
-pub use text::{TextSignFormat, TextSubCommand};
+pub use self::{
+    base64::{Base64Format, Base64SubCommand},
+    csv::OutputFormat,
+    http::HttpSubCommand,
+    text::{TextSignFormat, TextSubCommand},
+};
 
 #[derive(Debug, Parser)]
 #[clap(name = "rcli", version, author, about, long_about = None)]
@@ -32,6 +35,9 @@ pub enum SubCommand {
 
     #[command(subcommand)]
     Text(TextSubCommand),
+
+    #[command(subcommand)]
+    Http(HttpSubCommand),
 }
 
 fn is_file_exist(path: &str) -> Result<String, String> {
