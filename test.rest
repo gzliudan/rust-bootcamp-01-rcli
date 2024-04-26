@@ -1,15 +1,25 @@
 ### Get index page
-
 GET http://localhost:8080/
 
 ### Get a non exist file
-
 GET http://localhost:8080/abc.txt
 
 ### Get an exist file
-
 GET http://localhost:8080/Cargo.toml
+Accept-Encoding: gzip
+Range: bytes=0-100
 
 ### Get an exist binary file
-
 GET http://localhost:8080/fixtures/ed25519.sk
+
+### Get index page
+GET http://localhost:8080/tower/
+
+### Get a non exist file
+GET http://localhost:8080/tower/abc.txt
+
+### Get an exist file
+GET http://localhost:8080/tower/Cargo.toml
+
+### Get an exist binary file
+GET http://localhost:8080/tower/fixtures/ed25519.sk

@@ -5,7 +5,9 @@ use axum::{
     routing::get,
     Router,
 };
-use std::{path::PathBuf, sync::Arc};
+use std::{net::SocketAddr, path::PathBuf, sync::Arc};
+use tokio::net::TcpListener;
+use tower_http::services::ServeDir;
 use tracing::{info, warn};
 
 #[derive(Debug)]
@@ -14,11 +16,14 @@ pub struct HttpServeState {
 }
 
 pub async fn process_http_serve(path: PathBuf, port: u16) -> Result<()> {
-    let addr = std::net::SocketAddr::from(([0, 0, 0, 0], port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     info!("Serveing {:?} on port {}", path, addr);
-    let state = HttpServeState { path };
-    let router = Router::new().route("/*path", get(file_handler).with_state(Arc::new(state)));
-    let listener = tokio::net::TcpListener::bind(addr).await?;
+    let state = HttpServeState { path: path.clone() };
+    let router = Router::new()
+        .nest_service("/tower", ServeDir::new(path))
+        .route("/*path", get(file_handler))
+        .with_state(Arc::new(state));
+    let listener = TcpListener::bind(addr).await?;
     axum::serve(listener, router).await?;
     Ok(())
 }
@@ -49,5 +54,20 @@ async fn file_handler(
                 )
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_file_handler() {
+        let state = Arc::new(HttpServeState {
+            path: PathBuf::from("."),
+        });
+        let (status, content) = file_handler(State(state), Path("Cargo.toml".to_string())).await;
+        assert_eq!(status, StatusCode::OK);
+        assert!(content.trim().starts_with("[package]"));
     }
 }
