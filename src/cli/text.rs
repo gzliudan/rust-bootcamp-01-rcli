@@ -1,5 +1,5 @@
 use super::{is_dir_exist, is_file_exist};
-use crate::CmdExector;
+use crate::{process_text_generate, process_text_sign, process_text_verify, CmdExector};
 use anyhow::Ok;
 use clap::Parser;
 use std::{fmt, path::PathBuf, str::FromStr};
@@ -57,7 +57,7 @@ pub struct TextSignOpts {
 
 impl CmdExector for TextSignOpts {
     async fn execute(self) -> anyhow::Result<()> {
-        let signed = crate::process_text_sign(&self.input, &self.key, self.format)?;
+        let signed = process_text_sign(&self.input, &self.key, self.format)?;
         println!("{signed}");
         Ok(())
     }
@@ -81,7 +81,7 @@ pub struct TextVerifyOpts {
 
 impl CmdExector for TextVerifyOpts {
     async fn execute(self) -> anyhow::Result<()> {
-        let is_ok = crate::process_text_verify(&self.input, &self.key, self.format, &self.sig)?;
+        let is_ok = process_text_verify(&self.input, &self.key, self.format, &self.sig)?;
         println!("{is_ok}");
         Ok(())
     }
@@ -98,17 +98,9 @@ pub struct TextKeyGenerateOpts {
 
 impl CmdExector for TextKeyGenerateOpts {
     async fn execute(self) -> anyhow::Result<()> {
-        let key = crate::process_text_generate(self.format)?;
-        match self.format {
-            TextSignFormat::Blake3 => {
-                let name = self.output.join("blake3.txt");
-                fs::write(name, &key[0]).await?;
-            }
-            TextSignFormat::Ed25519 => {
-                let name = &self.output;
-                fs::write(name.join("ed25519.sk"), &key[0]).await?;
-                fs::write(name.join("ed25519.pk"), &key[1]).await?;
-            }
+        let keys = process_text_generate(self.format)?;
+        for (name, key) in keys {
+            fs::write(self.output.join(name), key).await?;
         }
         Ok(())
     }

@@ -3,7 +3,8 @@ use anyhow::{Ok, Result};
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rand::rngs::OsRng;
-use std::{fs, io::Read, path::Path};
+use std::{collections::HashMap, io::Read};
+use std::{fs, path::Path};
 
 pub trait TextSign {
     /// sign any input data
@@ -21,10 +22,6 @@ pub trait KeyLoader {
         Self: Sized;
 }
 
-pub trait KeyGenerator {
-    fn generate() -> Result<Vec<Vec<u8>>>;
-}
-
 pub struct Blake3 {
     key: [u8; 32],
 }
@@ -40,20 +37,19 @@ impl Blake3 {
         let signer = Self::new(key);
         Ok(signer)
     }
+
+    fn generate() -> Result<HashMap<&'static str, Vec<u8>>> {
+        let key = process_genpass(32, true, true, true)?;
+        let mut map = HashMap::new();
+        map.insert("blake3.txt", key.as_bytes().to_vec());
+        Ok(map)
+    }
 }
 
 impl KeyLoader for Blake3 {
     fn load(path: impl AsRef<Path>) -> Result<Self> {
         let key = fs::read(path)?;
         Self::try_new(&key)
-    }
-}
-
-impl KeyGenerator for Blake3 {
-    fn generate() -> Result<Vec<Vec<u8>>> {
-        let key = process_genpass(32, true, true, true)?;
-        let key = key.as_bytes().to_vec();
-        Ok(vec![key])
     }
 }
 
@@ -89,22 +85,22 @@ impl Ed25519Signer {
         let signer = Self::new(key);
         Ok(signer)
     }
+
+    fn generate() -> Result<HashMap<&'static str, Vec<u8>>> {
+        let mut csprng = OsRng;
+        let sk: SigningKey = SigningKey::generate(&mut csprng);
+        let pk: VerifyingKey = (&sk).into();
+        let mut map = HashMap::new();
+        map.insert("ed25519.sk", sk.to_bytes().to_vec());
+        map.insert("ed25519.pk", pk.to_bytes().to_vec());
+        Ok(map)
+    }
 }
 
 impl KeyLoader for Ed25519Signer {
     fn load(path: impl AsRef<Path>) -> Result<Self> {
         let key = fs::read(path)?;
         Self::try_new(&key)
-    }
-}
-
-impl KeyGenerator for Ed25519Signer {
-    fn generate() -> Result<Vec<Vec<u8>>> {
-        let mut csprng = OsRng;
-        let sk = SigningKey::generate(&mut csprng);
-        let pk = sk.verifying_key().to_bytes().to_vec();
-        let sk = sk.to_bytes().to_vec();
-        Ok(vec![sk, pk])
     }
 }
 
@@ -187,7 +183,7 @@ pub fn process_text_verify(
     Ok(is_ok)
 }
 
-pub fn process_text_generate(format: TextSignFormat) -> Result<Vec<Vec<u8>>> {
+pub fn process_text_generate(format: TextSignFormat) -> Result<HashMap<&'static str, Vec<u8>>> {
     match format {
         TextSignFormat::Blake3 => Blake3::generate(),
         TextSignFormat::Ed25519 => Ed25519Signer::generate(),
