@@ -5,6 +5,7 @@ mod http;
 mod text;
 
 use self::{csv::CsvOpts, genpass::GenPassOpts};
+use crate::CmdExector;
 use clap::Parser;
 use std::path::{Path, PathBuf};
 
@@ -30,14 +31,26 @@ pub enum SubCommand {
     #[command(name = "genpass", about = "Generate a random password")]
     GenPass(GenPassOpts),
 
-    #[command(subcommand)]
+    #[command(subcommand, about = "base64 encode/decode")]
     Base64(Base64SubCommand),
 
-    #[command(subcommand)]
+    #[command(subcommand, about = "text sign/verify")]
     Text(TextSubCommand),
 
-    #[command(subcommand)]
+    #[command(subcommand, about = "http server")]
     Http(HttpSubCommand),
+}
+
+impl CmdExector for SubCommand {
+    async fn execute(self) -> anyhow::Result<()> {
+        match self {
+            SubCommand::Csv(opts) => opts.execute().await,
+            SubCommand::GenPass(opts) => opts.execute().await,
+            SubCommand::Base64(opts) => opts.execute().await,
+            SubCommand::Text(opts) => opts.execute().await,
+            SubCommand::Http(opts) => opts.execute().await,
+        }
+    }
 }
 
 fn is_file_exist(path: &str) -> Result<String, String> {
