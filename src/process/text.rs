@@ -1,10 +1,11 @@
-use crate::{get_reader, process_genpass, TextSignFormat};
-use anyhow::{Ok, Result};
+use anyhow::Result;
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use ed25519_dalek::{Signature, Signer, SigningKey, Verifier, VerifyingKey};
 use rand::rngs::OsRng;
 use std::{collections::HashMap, io::Read};
 use std::{fs, path::Path};
+
+use crate::{get_reader, process_genpass, TextSignFormat};
 
 pub trait TextSign {
     /// sign any input data

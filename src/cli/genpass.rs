@@ -1,6 +1,7 @@
-use crate::CmdExector;
 use clap::Parser;
 use zxcvbn::zxcvbn;
+
+use crate::CmdExector;
 
 #[derive(Debug, Parser)]
 pub struct GenPassOpts {

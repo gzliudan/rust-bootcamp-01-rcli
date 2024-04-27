@@ -1,4 +1,3 @@
-use anyhow::Ok;
 use rand::seq::SliceRandom;
 
 const UPPER: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZ";

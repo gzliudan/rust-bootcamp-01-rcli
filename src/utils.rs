@@ -1,6 +1,5 @@
 use anyhow::Result;
-use std::fs::File;
-use std::io::Read;
+use std::{fs::File, io::Read};
 
 pub fn get_reader(input: &str) -> Result<Box<dyn Read>> {
     let reader: Box<dyn Read> = if input == "-" {

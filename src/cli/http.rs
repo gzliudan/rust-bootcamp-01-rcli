@@ -1,7 +1,10 @@
-use super::is_dir_exist;
-use crate::CmdExector;
 use clap::Parser;
+use enum_dispatch::enum_dispatch;
 use std::path::PathBuf;
+
+use crate::CmdExector;
+
+use super::is_dir_exist;
 
 #[derive(Debug, Parser)]
 pub struct HttpServeOpts {
@@ -19,15 +22,8 @@ impl CmdExector for HttpServeOpts {
 }
 
 #[derive(Debug, Parser)]
+#[enum_dispatch(CmdExector)]
 pub enum HttpSubCommand {
     #[command(name = "serve", about = "serve a directory over http")]
     Serve(HttpServeOpts),
-}
-
-impl CmdExector for HttpSubCommand {
-    async fn execute(self) -> anyhow::Result<()> {
-        match self {
-            HttpSubCommand::Serve(opts) => opts.execute().await,
-        }
-    }
 }

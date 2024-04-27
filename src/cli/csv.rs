@@ -1,7 +1,9 @@
-use super::is_file_exist;
-use crate::CmdExector;
 use clap::Parser;
 use std::{fmt, str::FromStr};
+
+use crate::CmdExector;
+
+use super::is_file_exist;
 
 #[derive(Debug, Clone, Copy)]
 pub enum OutputFormat {
